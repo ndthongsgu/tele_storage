@@ -1,0 +1,28 @@
+# Environment variables & secrets
+.env
+*.env
+!.env.example
+
+# Compiled binaries
+/tele_storage
+*.exe
+*.exe.manifest
+*.dll
+*.so
+*.dylib
+bin/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating System files
+.DS_Store
+Thumbs.db

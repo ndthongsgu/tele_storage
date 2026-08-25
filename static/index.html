@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TeleStorage - Telegram API Documentation & Console</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="background-globes">
+    <div class="globe globe-1"></div>
+    <div class="globe globe-2"></div>
+  </div>
+
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon"><i class="fa-solid fa-paper-plane"></i></div>
+        <div class="brand-text">
+          <h2>TeleStorage</h2>
+          <span>API Reference v1.0</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <div class="nav-section-title">Overview</div>
+        <a href="#overview" class="nav-item active" data-target="overview"><i class="fa-solid fa-book-open"></i> Introduction</a>
+        <a href="#authentication" class="nav-item" data-target="authentication"><i class="fa-solid fa-key"></i> Credentials & .env</a>
+
+        <div class="nav-section-title">API Endpoints</div>
+        <a href="#endpoint-upload" class="nav-item" data-target="endpoint-upload">
+          <span class="method-badge post">POST</span> Upload File
+        </a>
+        <a href="#endpoint-download" class="nav-item" data-target="endpoint-download">
+          <span class="method-badge get">GET</span> Download / Stream
+        </a>
+        <a href="#endpoint-info" class="nav-item" data-target="endpoint-info">
+          <span class="method-badge get">GET</span> File Info
+        </a>
+        <a href="#endpoint-delete" class="nav-item" data-target="endpoint-delete">
+          <span class="method-badge delete">DELETE</span> Delete Message
+        </a>
+        <a href="#endpoint-health" class="nav-item" data-target="endpoint-health">
+          <span class="method-badge get">GET</span> Health Check
+        </a>
+      </nav>
+
+
+      <div class="sidebar-footer">
+        <div class="server-status" id="serverStatusBadge">
+          <span class="status-dot"></span>
+          <span id="serverStatusText">Checking API Status...</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Documentation Content -->
+    <main class="main-content">
+
+      <!-- Header Banner -->
+      <header class="top-header">
+        <div>
+          <h1 class="page-title">Telegram API Documentation</h1>
+          <p class="page-subtitle">Stateless HTTP REST API for uploading, streaming, and managing files via Telegram Bot API</p>
+        </div>
+      </header>
+
+      <!-- Overview Section -->
+      <section id="overview" class="doc-section">
+        <div class="card">
+          <h2><i class="fa-solid fa-compass"></i> Overview</h2>
+          <p>TeleStorage provides a lightweight, stateless HTTP API wrapper around Telegram's Bot API. It allows uploading any document up to 50MB directly to your Telegram chat/channel, and retrieving streamable direct download URLs using Telegram <code>file_id</code>s.</p>
+          <div class="info-grid">
+            <div class="info-box">
+              <i class="fa-solid fa-bolt"></i>
+              <div>
+                <strong>Zero Database</strong>
+                <span>Completely stateless architecture. No local database or disk storage required.</span>
+              </div>
+            </div>
+            <div class="info-box">
+              <i class="fa-solid fa-cloud-arrow-down"></i>
+              <div>
+                <strong>Direct Streaming</strong>
+                <span>Files are dynamically fetched and streamed directly from Telegram servers to the client.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Credentials Section -->
+      <section id="authentication" class="doc-section">
+        <div class="card">
+          <h2><i class="fa-solid fa-key"></i> Configuration (.env) & Telegram Setup Guide</h2>
+          <p>Before making API requests, configure your <code>.env</code> file with your Telegram Bot Token and Chat ID:</p>
+          <pre class="code-block"><code>TELEGRAM_BOT_TOKEN=123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ
+TELEGRAM_CHAT_ID=-1001234567890
+PORT=8080
+MAX_UPLOAD_SIZE_MB=50</code></pre>
+
+          <div class="guide-container">
+            <!-- Step 1: TELEGRAM_BOT_TOKEN -->
+            <div class="guide-card">
+              <div class="guide-header">
+                <span class="guide-step">Step 1</span>
+                <h3><i class="fa-solid fa-robot"></i> Cách lấy TELEGRAM_BOT_TOKEN</h3>
+              </div>
+              <ol class="guide-list">
+                <li>Mở ứng dụng Telegram, tìm kiếm <strong>@BotFather</strong> (bot chính thức của Telegram có tích xanh).</li>
+                <li>Gửi lệnh <code>/newbot</code> cho BotFather.</li>
+                <li>Nhập tên hiển thị cho Bot (ví dụ: <code>My Storage Bot</code>).</li>
+                <li>Nhập tên username cho Bot (bắt buộc kết thúc bằng <code>bot</code>, ví dụ: <code>my_tele_storage_bot</code>).</li>
+                <li>BotFather sẽ gửi lại đoạn **HTTP API Access Token** (dạng: <code>123456789:ABCdefGhIJK...</code>). Đặt chuỗi này vào <code>TELEGRAM_BOT_TOKEN</code>.</li>
+              </ol>
+            </div>
+
+            <!-- Step 2: TELEGRAM_CHAT_ID -->
+            <div class="guide-card">
+              <div class="guide-header">
+                <span class="guide-step">Step 2</span>
+                <h3><i class="fa-solid fa-comments"></i> Cách lấy TELEGRAM_CHAT_ID</h3>
+              </div>
+              <ol class="guide-list">
+                <li>Tạo một <strong>Group (Nhóm)</strong> hoặc <strong>Channel (Kênh)</strong> mới trên Telegram (hoặc dùng nhóm sẵn có).</li>
+                <li>Thêm Bot bạn vừa tạo ở Step 1 vào Kênh/Nhóm và cấp quyền **Administrator** (Quản trị viên) để Bot có quyền đăng bài/file.</li>
+                <li>Gửi 1 tin nhắn bất kỳ vào Kênh/Nhóm đó.</li>
+                <li>Lấy **Chat ID** theo 1 trong các cách sau:
+                  <ul class="guide-sublist">
+                    <li><strong>Cách 1 (Dùng Bot Telegram):</strong> Forward (Chuyển tiếp) tin nhắn trong Kênh đó sang <strong>@userinfobot</strong> hoặc <strong>@GetIDBot</strong> hoặc <strong>@raw_data_bot</strong>. Bot sẽ phản hồi ID của Kênh (thường bắt đầu bằng <code>-100...</code>).</li>
+                    <li><strong>Cách 2 (Telegram Web):</strong> Mở Telegram Web (<a href="https://web.telegram.org" target="_blank">web.telegram.org</a>), bấm vào Kênh của bạn. Thanh địa chỉ URL sẽ dạng <code>.../c/1234567890/15</code> -> Chat ID sẽ là <code>-1001234567890</code>.</li>
+                    <li><strong>Cách 3 (Dùng Browser API):</strong> Truy cập link <code>https://api.telegram.org/bot&lt;BOT_TOKEN&gt;/getUpdates</code> trên trình duyệt để xem JSON chứa <code>"chat":{"id": -100xxxxxxxxxx}</code>.</li>
+                  </ul>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ENDPOINT: POST /api/upload -->
+      <section id="endpoint-upload" class="doc-section">
+        <div class="card endpoint-card">
+          <div class="endpoint-header">
+            <span class="method-tag post">POST</span>
+            <span class="endpoint-path">/api/upload</span>
+            <span class="endpoint-desc">Upload File to Telegram</span>
+          </div>
+
+          <div class="doc-body">
+            <h3>Request Format</h3>
+            <p><strong>Content-Type:</strong> <code>multipart/form-data</code></p>
+            <table class="params-table">
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>Type</th>
+                  <th>Required</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>file</code></td>
+                  <td>Binary File</td>
+                  <td><span class="req-tag required">Required</span></td>
+                  <td>File stream to upload (Max limit: 50MB)</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>Response Structure</h3>
+            <pre class="code-block"><code>{
+  "status": "success",
+  "data": {
+    "file_id": "AgACAgIA...",       // Telegram file_id (use for download)
+    "file_unique_id": "AQAD...",// Unique telegram file identifier
+    "message_id": 1234,         // Telegram channel message_id
+    "file_name": "report.pdf",  // Original file name
+    "file_size": 1048576,       // Size in bytes
+    "mime_type": "application/pdf",
+    "download_url": "/api/download?file_id=AgACAgIA...&file_name=report.pdf"
+  }
+}</code></pre>
+
+            <!-- Interactive Tester -->
+            <div class="tester-box">
+              <div class="tester-header"><i class="fa-solid fa-play"></i> Interactive Test Console</div>
+              <form id="formUpload" class="tester-form">
+                <div class="form-group">
+                  <label>Select file to upload:</label>
+                  <input type="file" id="uploadFileInput" required>
+                </div>
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane"></i> Send Upload Request</button>
+              </form>
+              <div class="response-box hidden" id="responseUpload">
+                <div class="res-status" id="resStatusUpload"></div>
+                <pre class="code-block"><code id="resBodyUpload"></code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ENDPOINT: GET /api/download -->
+      <section id="endpoint-download" class="doc-section">
+
+        <div class="card endpoint-card">
+          <div class="endpoint-header">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/api/download</span>
+            <span class="endpoint-desc">Stream / Download File</span>
+          </div>
+
+          <div class="doc-body">
+            <h3>Query Parameters</h3>
+            <table class="params-table">
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Type</th>
+                  <th>Required</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>file_id</code></td>
+                  <td>string</td>
+                  <td><span class="req-tag required">Required</span></td>
+                  <td>Telegram <code>file_id</code> returned during upload</td>
+                </tr>
+                <tr>
+                  <td><code>file_name</code></td>
+                  <td>string</td>
+                  <td><span class="req-tag optional">Optional</span></td>
+                  <td>Custom filename for Content-Disposition header</td>
+                </tr>
+                <tr>
+                  <td><code>dl</code></td>
+                  <td>integer</td>
+                  <td><span class="req-tag optional">Optional</span></td>
+                  <td>Set to <code>1</code> for attachment download, <code>0</code> for inline preview</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>Response</h3>
+            <p>Direct HTTP Binary Stream with appropriate <code>Content-Type</code> and <code>Content-Disposition</code> headers.</p>
+
+            <!-- Interactive Tester -->
+            <div class="tester-box">
+              <div class="tester-header"><i class="fa-solid fa-play"></i> Interactive Test Console</div>
+              <form id="formDownload" class="tester-form">
+                <div class="form-group">
+                  <label>Telegram file_id:</label>
+                  <input type="text" id="dlFileIdInput" placeholder="Enter Telegram file_id" required>
+                </div>
+                <div class="form-group">
+                  <label>File Name (optional):</label>
+                  <input type="text" id="dlFileNameInput" placeholder="e.g. document.pdf">
+                </div>
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-download"></i> Generate Download Link</button>
+              </form>
+              <div class="response-box hidden" id="responseDownload">
+                <div class="res-status" id="resStatusDownload"></div>
+                <div id="resBodyDownload"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ENDPOINT: GET /api/info -->
+      <section id="endpoint-info" class="doc-section">
+        <div class="card endpoint-card">
+          <div class="endpoint-header">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/api/info</span>
+            <span class="endpoint-desc">Query File Path & Size Metadata</span>
+          </div>
+
+          <div class="doc-body">
+            <h3>Query Parameters</h3>
+            <table class="params-table">
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Type</th>
+                  <th>Required</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>file_id</code></td>
+                  <td>string</td>
+                  <td><span class="req-tag required">Required</span></td>
+                  <td>Telegram <code>file_id</code></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>Response Structure</h3>
+            <pre class="code-block"><code>{
+  "status": "success",
+  "data": {
+    "file_id": "AgACAgIA...",
+    "file_path": "documents/file_0.pdf",
+    "file_size": 1048576
+  }
+}</code></pre>
+
+            <!-- Interactive Tester -->
+            <div class="tester-box">
+              <div class="tester-header"><i class="fa-solid fa-play"></i> Interactive Test Console</div>
+              <form id="formInfo" class="tester-form">
+                <div class="form-group">
+                  <label>Telegram file_id:</label>
+                  <input type="text" id="infoFileIdInput" placeholder="Enter Telegram file_id" required>
+                </div>
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-circle-info"></i> Query File Info</button>
+              </form>
+              <div class="response-box hidden" id="responseInfo">
+                <div class="res-status" id="resStatusInfo"></div>
+                <pre class="code-block"><code id="resBodyInfo"></code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ENDPOINT: DELETE /api/messages/{message_id} -->
+      <section id="endpoint-delete" class="doc-section">
+        <div class="card endpoint-card">
+          <div class="endpoint-header">
+            <span class="method-tag delete">DELETE</span>
+            <span class="endpoint-path">/api/messages/{message_id}</span>
+            <span class="endpoint-desc">Delete Message on Telegram</span>
+          </div>
+
+          <div class="doc-body">
+            <h3>Path Parameters</h3>
+            <table class="params-table">
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Type</th>
+                  <th>Required</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>message_id</code></td>
+                  <td>integer</td>
+                  <td><span class="req-tag required">Required</span></td>
+                  <td>Telegram message_id returned during upload</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>Response Structure</h3>
+            <pre class="code-block"><code>{
+  "status": "success",
+  "message": "Telegram message 1234 deleted successfully"
+}</code></pre>
+
+            <!-- Interactive Tester -->
+            <div class="tester-box">
+              <div class="tester-header"><i class="fa-solid fa-play"></i> Interactive Test Console</div>
+              <form id="formDelete" class="tester-form">
+                <div class="form-group">
+                  <label>Telegram message_id:</label>
+                  <input type="number" id="delMsgIdInput" placeholder="e.g. 1234" required>
+                </div>
+                <button type="submit" class="btn-primary danger"><i class="fa-solid fa-trash-can"></i> Delete Message</button>
+              </form>
+              <div class="response-box hidden" id="responseDelete">
+                <div class="res-status" id="resStatusDelete"></div>
+                <pre class="code-block"><code id="resBodyDelete"></code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ENDPOINT: GET /health -->
+      <section id="endpoint-health" class="doc-section">
+        <div class="card endpoint-card">
+          <div class="endpoint-header">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/health</span>
+            <span class="endpoint-desc">Health Check</span>
+          </div>
+
+          <div class="doc-body">
+            <h3>Response Structure</h3>
+            <pre class="code-block"><code>{
+  "status": "ok",
+  "time": "2026-08-25T10:00:00Z"
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
